@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+		<!-- 先引入 Vue -->
+		<script src="https://unpkg.com/vue/dist/vue.js"></script>
+		<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
+		<!-- 引入组件库 -->
+		<script src="https://unpkg.com/element-ui/lib/index.js"></script>
+		<style type="text/css">
+			.line {
+				text-align: center;
+			}
+			
+			.el-form {
+				width: 460px;
+			}
+			
+			.el-select {
+				width: 100%;
+			}
+			
+			.el-tabs {
+				border: 1px solid #ddd;
+				border-radius: 4px;
+				box-shadow: 0 0px 20px rgba(0, 0, 0, .5);
+			}
+			
+			.el-form {
+				padding-top: 20px;
+			}
+			
+			.el-input-number {
+				display: inline-block;
+				overflow: hidden;
+				width: 180px;
+				position: relative;
+			}
+			
+			[v-cloak] {
+				display: none !important;
+			}
+			
+			.toolbar {
+				background: #f2f2f2;
+				padding: 10px;
+				margin: 10px 0;
+			}
+			
+			.el-pagination {
+				padding-top: 7px;
+			}
+			
+			.el-pagination .btn-prev {
+				border-radius: 2px 0 0 2px;
+				border: 1px solid #d1dbe5;
+				border-right: 0;
+			}
+			
+			.el-pagination .btn-next {
+				border-radius: 0 2px 2px 0;
+				border: 1px solid #d1dbe5;
+			}
+			
+			.el-pagination-suggestion__wrap,
+			.el-pager li {
+				border: 1px solid #d1dbe5;
+				border-right: 0;
+				box-sizing: border-box;
+			}
+			
+			.el-pager li.active {
+				background: #409EFF;
+				color: white;
+				cursor: default;
+			}
+			
+			body {
+				box-shadow: 0 0 20px rgba(0, 0, 0, .6)
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="app" v-cloak>
+			<el-container>
+				<el-header>
+					<el-menu :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+						<el-menu-item index="1">处理中心</el-menu-item>
+						<el-submenu index="2">
+							<template slot="title">我的工作台</template>
+							<el-menu-item index="2-1">选项1</el-menu-item>
+							<el-menu-item index="2-2">选项2</el-menu-item>
+							<el-menu-item index="2-3">选项3</el-menu-item>
+						</el-submenu>
+						<el-menu-item index="3"></el-menu-item>
+					</el-menu>
+				</el-header>
+				<el-container>
+					<el-aside width="200px" style="background-color:rgb(238,241,246)">
+						<el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose">
+							<el-submenu index="1">
+								<template slot="title">
+									<i class="el-icon-location"></i>
+									<span>导航一</span>
+								</template>
+								<el-menu-item-group>
+									<el-menu-item index="1-1" @click="table">table</el-menu-item>
+									<el-menu-item index="1-2">form</el-menu-item>
+									<el-menu-item index="1-3">test</el-menu-item>
+								</el-menu-item-group>
+							</el-submenu>
+							<el-menu-item index="2">
+								<i class="el-icon-menu"></i>
+								<span slot="title">导航二</span>
+							</el-menu-item>
+							<el-menu-item index="3">
+								<i class="el-icon-setting"></i>
+								<span slot="title">导航三</span>
+							</el-menu-item>
+						</el-menu>
+					</el-aside>
+					<el-main>
+						<div class="el-col el-col-24 toolbar">
+							<el-input v-model.trim="formInline.name" size="small" style="width:300px;" @keyup.enter.native="checkinfo(formInline.name)" placeholder="搜索姓名"></el-input>
+							<el-button type="primary" size="small" @click="checkinfo(formInline.name)">查询</el-button>
+							<el-button type="primary" size="small" @click="addinfo">新增</el-button>
+						</div>
+						<!--<el-form :inline="true" :model="formInline" class="demo-form-inline" size="small" @submit.native.prevent>
+							<el-form-item>
+								
+							</el-form-item>
+							<el-form-item>
+								
+							</el-form-item>
+							<el-form-item>
+								
+							</el-form-item>
+						</el-form>-->
+						<el-table ref="multipleTable" v-loading="loading" :data="tableData3.slice((currentPage-1)*pagesize,currentPage*pagesize)" tooltip-effect="dark" style="width: 100%" @selection-change="handleSelectionChange">
+							<el-table-column type="selection" :reserve-selection="true" width="55">
+							</el-table-column>
+							<el-table-column type="index" label="#" width="120">
+
+							</el-table-column>
+							<el-table-column prop="name" label="姓名" width="120">
+							</el-table-column>
+							<el-table-column prop="sex" label="性别" width="120">
+							</el-table-column>
+							<el-table-column prop="age" label="年龄" width="120">
+							</el-table-column>
+							<el-table-column prop="birth" label="生日" width="120">
+							</el-table-column>
+							<el-table-column prop="address" label="地址" show-overflow-tooltip>
+							</el-table-column>
+							<el-table-column label="操作">
+								<template slot-scope="scope">
+									<el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+									<el-button size="mini" type="danger" @click="handleDelete(scope.$index,tableData3 )">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+						<div class="el-col el-col-24 toolbar">
+							<el-button type="danger" @click="deletemany" :disabled="deletedisabled">批量删除</el-button>
+							<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" style="float:right;margin-right:100px;" :page-size.number="pagesize" :current-page.sync="currentPage" layout="prev, pager, next" :total.number="tableData3.length">
+							</el-pagination>
+						</div>
+					</el-main>
+
+					<el-dialog title="表单" :typeid="typeid" :visible.sync="dialogFormVisible">
+						<el-dialog width="30%" title="内层 Dialog" :visible.sync="innerVisible" append-to-body>
+							<span>是否确定当前的操作</span>
+							<div slot="footer" class="dialog-footer">
+								<el-button @click=" cancelagain">取 消</el-button>
+								<el-button type="primary" @click="sureagain">确 定</el-button>
+							</div>
+						</el-dialog>
+						<el-form :model="formadd" ref="formadd" :rules="rules">
+							<el-form-item label="姓名" :label-width="formLabelWidth" prop="stuname">
+								<el-input v-model="formadd.stuname" auto-complete="off"></el-input>
+							</el-form-item>
+							<el-form-item label="性别" :label-width="formLabelWidth">
+								<el-radio-group v-model="formadd.sex">
+									<el-radio label="男">男</el-radio>
+									<el-radio label="女">女</el-radio>
+								</el-radio-group>
+							</el-form-item>
+							<el-form-item label="年龄" :label-width="formLabelWidth">
+								<el-input-number v-model="formadd.age" controls-position="right" @change="handleChange" style="width: 100%;" :min="0" :max="99"></el-input-number>
+							</el-form-item>
+							<el-form-item label="生日" :label-width="formLabelWidth">
+								<el-date-picker type="date" value-format="yy-MM-dd" placeholder="请选择" v-model="formadd.birth" style="width: 100%;"></el-date-picker>
+							</el-form-item>
+							<el-form-item label="地址" :label-width="formLabelWidth">
+								<el-input type="textarea" v-model="formadd.address"></el-input>
+							</el-form-item>
+						</el-form>
+						<div slot="footer" class="dialog-footer">
+							<el-button @click="dialogFormVisible = false">取 消</el-button>
+							<el-button type="primary" @click="sure('formadd')">确 定</el-button>
+						</div>
+					</el-dialog>
+				</el-container>
+			</el-container>
+		</div>
+	</body>
+	<script>
+		var item = {
+			date: '2016-05-02',
+			name: '王小虎',
+			address: '上海市普陀区金沙江路 1518 弄'
+		};
+		var vm = new Vue({
+			el: '#app',
+			data: {
+				activeIndex: '1',
+				isshowtable: false,
+				innerVisible: false,
+				formInline: {
+					name: '',
+				},
+				typeid: '0',
+				formadd: {
+					stuname: '',
+					stuphone: '',
+					sex: '',
+					age: '',
+					birth: '',
+					address: ''
+				},
+				items: [{
+					sex: '男',
+					label: '男',
+					value: '0'
+				}, {
+					sex: '女',
+					label: '女',
+					value: '1'
+				}],
+				formLabelWidth: '120px',
+				dialogFormVisible: false,
+				editindex: '',
+				editrow: '',
+				tableData3: [],
+				multipleSelection: [],
+				rules: {
+					stuname: [{
+						required: true,
+						message: '请输入学生名称',
+						trigger: 'blur'
+					}],
+				},
+				deletedisabled: true,
+				loading: true,
+				datalib: '',
+				pagesize: 5,
+				currentPage: 1
+			},
+			mounted: function() {
+				this.$nextTick(function() {
+					getinfo()
+				})
+
+			},
+			methods: {
+				handleOpen(key, keyPath) {
+					console.log(key, keyPath);
+				},
+				handleClose(key, keyPath) {
+					console.log(key, keyPath);
+				},
+				handleSelect(key, keyPath) {
+					console.log(key, keyPath)
+				},
+				table() {
+					vm.isshowtable = true
+				},
+				handleSelectionChange(val) {
+					console.log(val)
+					if(val == "" || val == undefined) {
+						vm.deletedisabled = true
+					} else {
+						vm.deletedisabled = false
+						this.multipleSelection = val;
+					}
+
+				},
+				handleEdit(index, row) {
+					//点击编辑弹出对应的信息嘻嘻
+
+					vm.editindex = row.id
+					vm.editrow = row
+					vm.typeid = "1"
+					vm.formadd.stuname = row.name
+					vm.formadd.sex = row.sex
+					vm.formadd.age = row.age
+					vm.formadd.birth = row.birth
+					vm.formadd.address = row.address
+					vm.dialogFormVisible = true;
+
+				},
+				handleDelete(index, row) {
+					this.$confirm('是否删除该条信息?', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						row.splice(index, 1);
+						this.$message({
+							type: 'success',
+							message: '删除成功!'
+						});
+					}).catch(() => {
+						this.$message({
+							type: 'info',
+							message: '已取消删除'
+						});
+					});
+					/*console.log(row[index].age)
+					 */
+				},
+				checkinfo(queryString) {
+
+					var data = this.tableData3;
+					vm.tableData3 = []
+					if(queryString == "" || queryString == undefined) {
+						/*全部数据的记录*/
+						vm.tableData3 = vm.tablelib
+					} else {
+						var results = queryString ? data.filter(this.createFilter(queryString)) : data;
+						vm.tableData3 = results;
+					}
+				},
+				createFilter(queryString) {
+
+					return(haha) => {
+						return(haha.name.toLowerCase().indexOf(queryString.toLowerCase()) >= 0);
+					};
+				},
+				addinfo() {
+					vm.typeid = "0"
+					vm.formadd.stuname = ""
+					vm.formadd.sex = ""
+					vm.formadd.age = ""
+					vm.formadd.birth = ""
+					vm.formadd.address = ""
+					vm.dialogFormVisible = true;
+				},
+				/*年龄*/
+				handleChange(value) {
+					
+				},
+				sure(formName) {
+
+					if(vm.typeid == "0") {
+
+						/*新增*/
+
+						this.$refs[formName].validate((valid) => {
+							if(valid) {
+								vm.innerVisible = true;
+
+							} else {
+								return false;
+							}
+						});
+
+					} else {
+						/*修改*/
+						this.$refs[formName].validate((valid) => {
+							if(valid) {
+								vm.innerVisible = true;
+								var result = vm.tableData3.slice((vm.currentPage - 1) * vm.pagesize, vm.currentPage * vm.pagesize)
+								for(var i = 0; i < result.length; i++) {
+									if(result[i].id == vm.editindex) {
+										result[i].birth = vm.formadd.birth
+										result[i].name = vm.formadd.stuname
+										result[i].sex = vm.formadd.sex
+										result[i].age = vm.formadd.age
+										result[i].address = vm.formadd.address
+									}
+								}
+							} else {
+								return false;
+							}
+						});
+
+					}
+				},
+				sureagain() {
+					vm.dialogFormVisible = false;
+					vm.innerVisible = false;
+					if(vm.typeid == "0") {
+						var a = {
+							"name": vm.formadd.stuname,
+							"sex": vm.formadd.sex,
+							"age": vm.formadd.age,
+							"birth": vm.formadd.birth,
+							"address": vm.formadd.address
+						}
+						vm.tableData3.push(a)
+						this.$message({
+							message: '新增成功！',
+							type: "success"
+						})
+					} else {
+						this.$message({
+							message: '修改成功！',
+							type: "success"
+						})
+					}
+				},
+				querySearchAsync() {
+
+				},
+				cancelagain() {
+					vm.dialogFormVisible = true;
+					vm.innerVisible = false;
+				},
+				deletemany() {
+					for(var i = 0; i < vm.multipleSelection.length; i++) {
+						vm.tableData3.splice(vm.multipleSelection[i], 1);
+						if(i == vm.multipleSelection.length - 1) {
+							this.$refs.multipleTable.clearSelection();
+						}
+					}
+				},
+				handleSizeChange(val) {
+					this.pagesize = val;
+				},
+				handleCurrentChange(val) {
+					this.currentPage = val;
+					this.$refs.multipleTable.clearSelection();
+				},
+				getRowKeys(row) {
+					
+				}
+			},
+		})
+
+		function getinfo() {
+			$.ajax({
+				url: "./test.json",
+				type: "GET",
+				data: {},
+				dataType: "json",
+				async: false,
+				success: function(res) {
+
+					vm.tableData3 = res;
+					vm.tablelib = res;
+					setTimeout(function() {
+						vm.loading = false;
+					}, 1000)
+				},
+				error: function() {
+					alert("获取用户信息失败。")
+				}
+			})
+		}
+	</script>
+	<!-- <el-alert
+    title="警告提示的文案"
+    type="warning"
+    description="文字说明文字说明文字说明文字说明文字说明文字说明"
+    show-icon>
+  </el-alert>-->
+
+</html>
